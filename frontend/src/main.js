@@ -1,10 +1,10 @@
-import Grid from "./classes/Grid.js";
-import Obstacle from "./classes/Obstacle.js";
-import Particle from "./classes/Particle.js";
-import Player from "./classes/Player.js";
-import SoundEffects from "./classes/SoundEffects.js";
-import Star from "./classes/Star.js";
-import { GameState, NUMBER_STARS } from "./utils/constants.js";
+import Grid from "./entities/Grid.js";
+import Obstacle from "./entities/Obstacle.js";
+import Particle from "./entities/Particle.js";
+import Player from "./entities/Player.js";
+import SoundEffects from "./entities/SoundEffects.js";
+import Star from "./entities/Star.js";
+import { GameState, NUMBER_STARS } from "./configs/constants.js";
 
 const soundEffects = new SoundEffects();
 
