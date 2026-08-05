@@ -18,7 +18,16 @@
     <section class="start-screen screen">
         <div>
             <h1>Space Invaders</h1>
-            <button class="button-play">Play</button>
+            <button class="button-play">Jogar</button>
+            <button class="button-buy">Loja</button>
+
+            <div class="skin-selection">
+                <h2>Skin atual</h2>
+                <div class="selected-skin-preview">
+                    <span class="selected-skin-name">Padrão</span>
+                </div>
+                <div class="skin-options"></div>
+            </div>
         </div>
 
         <span>manual do dev version</span>
@@ -28,6 +37,18 @@
         <div>
             <h1>Game Over</h1>
             <button class="button-restart">Restart</button>
+            <button class="button-home">Menu</button>
+        </div>
+    </section>
+
+    <section class="store-screen screen hidden">
+        <div class="store-panel">
+            <div class="store-header">
+                <h1>Loja de Skins</h1>
+                <button class="button-close-store">Fechar</button>
+            </div>
+            <div class="store-items"></div>
+            <span class="store-hint">Compre skins de teste e selecione a favorita no menu.</span>
         </div>
     </section>
 
