@@ -3,8 +3,8 @@ import {
     PATH_ENGINE_IMAGE,
     PATH_ENGINE_SPRITES,
     PATH_SPACESHIP_IMAGE,
-} from "../configs/constants.js";
-import Projectile from "../bullets/Projectile.js";
+} from "../utils/constants.js";
+import Projectile from "./Projectile.js";
 
 class Player {
     constructor(canvasWidth, canvasHeight, skin = { tint: "#ffffff", image: PATH_SPACESHIP_IMAGE }) {

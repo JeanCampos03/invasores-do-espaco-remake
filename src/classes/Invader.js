@@ -1,5 +1,5 @@
-import { PATH_INVADER_IMAGE } from "../configs/constants.js";
-import Projectile from "../bullets/Projectile.js";
+import { PATH_INVADER_IMAGE } from "../utils/constants.js";
+import Projectile from "./Projectile.js";
 
 class Invader {
     constructor(position, velocity) {

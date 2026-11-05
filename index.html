@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="src/style.css">
+    <link rel="stylesheet" href="src/goal-panel.css">
     <title>Space Invaders</title>
 </head>
 <body>
@@ -20,6 +21,7 @@
             <h1>Space Invaders</h1>
             <button class="button-play">Jogar</button>
             <button class="button-buy">Loja</button>
+            <button class="button-report" type="button">Meta e relatório</button>
 
             <div class="skin-selection">
                 <h2>Skin atual</h2>
@@ -30,7 +32,7 @@
             </div>
         </div>
 
-        <span>manual do dev version</span>
+        <span class="screen-footer">manual do dev version</span>
     </section>
 
     <section class="game-over screen">
@@ -54,6 +56,6 @@
 
     <canvas></canvas>
 
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/index.js"></script>
 </body>
 </html>

@@ -1,16 +1,17 @@
-import Grid from "../enemies/Grid.js";
-import Obstacle from "../obstacles/Obstacle.js";
-import Particle from "../effects/Particle.js";
-import Player from "../player/Player.js";
-import SoundEffects from "../effects/SoundEffects.js";
-import Star from "../effects/Star.js";
-import { NUMBER_STARS } from "../configs/constants.js";
+import Grid from "./Grid.js";
+import Obstacle from "./Obstacle.js";
+import Particle from "./Particle.js";
+import Player from "./Player.js";
+import SoundEffects from "./SoundEffects.js";
+import Star from "./Star.js";
+import { NUMBER_STARS } from "../utils/constants.js";
 import { GameState } from "./GameState.js";
 import ScoreManager from "./ScoreManager.js";
 import InputHandler from "./InputHandler.js";
 import CollisionSystem from "./CollisionSystem.js";
-import ShopService from "../services/ShopService.js";
-import StoreCatalog from "../store/StoreCatalog.js";
+import skins from "../utils/storeCatalog.js";
+
+const STORE_STATE_KEY = "space-invaders-store";
 
 class Game {
     constructor(canvas) {
@@ -23,7 +24,7 @@ class Game {
 
         this.currentState = GameState.START;
         this.invaderShootInterval = null;
-        this.availableSkins = StoreCatalog.getSkins();
+        this.availableSkins = skins;
         this.ownedSkins = new Set(["skin-default"]);
         this.selectedSkinId = "skin-default";
 
@@ -49,7 +50,7 @@ class Game {
         this.setupEntities();
         this.bindUiEvents();
         this.generateStars();
-        this.loadStoreData();
+        this.initializeStore();
         this.gameLoop();
     }
 
@@ -97,25 +98,65 @@ class Game {
         this.buttonCloseStore.addEventListener("click", () => this.closeStore());
     }
 
-    async loadStoreData() {
-        try {
-            const skins = await ShopService.getCatalog();
-            this.availableSkins = Array.isArray(skins) ? skins : skins.catalog || [];
-        } catch (error) {
-            console.warn("Falha ao carregar catálogo da loja, usando skins locais.", error);
-            this.availableSkins = StoreCatalog.getSkins();
+    initializeStore() {
+        this.availableSkins = skins;
+        this.restoreStoreState();
+        if (!this.availableSkins.some((skin) => skin.id === this.selectedSkinId)) {
+            this.selectedSkinId = this.availableSkins[0].id;
         }
-
-        this.selectedSkinId = this.selectedSkinId || this.availableSkins[0]?.id;
         this.player.setSkin(this.getSelectedSkin());
         this.renderSkinOptions();
         this.renderStoreItems();
         this.updateSelectedSkinPreview();
     }
 
+    restoreStoreState() {
+        try {
+            const storedState = localStorage.getItem(STORE_STATE_KEY);
+            if (!storedState) return;
+
+            const state = JSON.parse(storedState);
+            if (!state || typeof state !== "object" || Array.isArray(state)) {
+                throw new Error("Os dados salvos da loja têm um formato inválido.");
+            }
+
+            const availableIds = new Set(
+                this.availableSkins.map((skin) => skin.id)
+            );
+            const ownedIds = Array.isArray(state.ownedSkins)
+                ? state.ownedSkins.filter(
+                      (id) => typeof id === "string" && availableIds.has(id)
+                  )
+                : [];
+            this.ownedSkins = new Set(["skin-default", ...ownedIds]);
+            this.selectedSkinId =
+                typeof state.selectedSkinId === "string" &&
+                this.ownedSkins.has(state.selectedSkinId) &&
+                availableIds.has(state.selectedSkinId)
+                    ? state.selectedSkinId
+                    : "skin-default";
+        } catch (error) {
+            console.warn("Não foi possível restaurar os dados salvos da loja.", error);
+        }
+    }
+
+    saveStoreState() {
+        try {
+            localStorage.setItem(
+                STORE_STATE_KEY,
+                JSON.stringify({
+                    ownedSkins: [...this.ownedSkins],
+                    selectedSkinId: this.selectedSkinId,
+                })
+            );
+        } catch (error) {
+            console.warn("Não foi possível salvar os dados da loja.", error);
+        }
+    }
+
     getSelectedSkin() {
         const skin = this.availableSkins.find((item) => item.id === this.selectedSkinId);
-        return skin || this.availableSkins[0] || StoreCatalog.getSkins()[0];
+        return skin || this.availableSkins[0] || skins[0];
     }
 
     renderSkinOptions() {
@@ -132,13 +173,13 @@ class Game {
                 option.classList.add("selected");
             }
 
-const previewImage = document.createElement("img");
-        previewImage.src = skin.image || "src/assets/images/spaceship.png";
-        previewImage.alt = `${skin.name} preview`;
-        previewImage.className = "skin-preview-image";
-        option.appendChild(previewImage);
+            const previewImage = document.createElement("img");
+            previewImage.src = skin.image || "src/assets/images/spaceship.png";
+            previewImage.alt = `${skin.name} preview`;
+            previewImage.className = "skin-preview-image";
+            option.appendChild(previewImage);
 
-        const title = document.createElement("strong");
+            const title = document.createElement("strong");
             title.textContent = skin.name;
             option.appendChild(title);
 
@@ -230,28 +271,28 @@ const previewImage = document.createElement("img");
 
         this.selectedSkinId = skinId;
         this.player.setSkin(this.getSelectedSkin());
+        this.saveStoreState();
         this.updateSelectedSkinPreview();
         this.renderSkinOptions();
         this.renderStoreItems();
     }
 
-    async purchaseSkin(skinId) {
+    purchaseSkin(skinId) {
         const skin = this.availableSkins.find((item) => item.id === skinId);
         if (!skin) {
             alert("Skin não encontrada.");
             return;
         }
 
-        try {
-            await ShopService.purchaseItem(skinId, "coins");
-            this.ownedSkins.add(skinId);
-            this.renderSkinOptions();
-            this.renderStoreItems();
-            alert(`Skin ${skin.name} comprada com sucesso!`);
-        } catch (error) {
-            alert(`Erro ao comprar skin: ${error.message}`);
-            console.error(error);
+        if (this.isSkinOwned(skinId)) {
+            return;
         }
+
+        this.ownedSkins.add(skinId);
+        this.saveStoreState();
+        this.renderSkinOptions();
+        this.renderStoreItems();
+        alert(`Skin ${skin.name} desbloqueada!`);
     }
 
     showGameData() {

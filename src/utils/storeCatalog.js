@@ -41,14 +41,4 @@ const SKINS = [
     },
 ];
 
-class StoreCatalog {
-    getCategories() {
-        return ["ships", "weapons", "skins", "boosters", "upgrades"];
-    }
-
-    static getSkins() {
-        return SKINS;
-    }
-}
-
-export default StoreCatalog;
+export default SKINS;
